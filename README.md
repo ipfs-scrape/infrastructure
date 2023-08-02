@@ -1,10 +1,37 @@
 # infrastructure
 
-the infrastructure
-
 ```mermaid
+---
+title: Simple Diagram
+---
 graph TD
 
+subgraph vpc
+direction LR
+lb["edge load balancer"]
+vpce["dynamodb vpce"]
+
+subgraph subnet-a
+api
+worker
+end
+
+subgraph subnet-b
+
+end
+
+end
+
+
+dynamodb
+
+lb --- api
+lb --- subnet-b
+subnet-b --- vpce
+vpce --- dynamodb
+
+api-- retrieve data ---vpce
+worker-- poll for queue ---vpce
 
 ```
 
