@@ -9,9 +9,9 @@ resource "aws_vpc_endpoint" "dynamodb" {
 resource "aws_dynamodb_table" "dynamodb" {
   name         = var.identifier
   billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "id"
+  hash_key     = "ID"
   attribute {
-    name = "id"
+    name = "ID"
     type = "S"
   }
 

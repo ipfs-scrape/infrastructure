@@ -3,12 +3,11 @@ resource "aws_ecs_task_definition" "my_task_definition" {
   container_definitions    = var.task_definitions
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  cpu                      = 256
-  memory                   = 512
+  cpu                      = 512
+  memory                   = 1024
 
   execution_role_arn = aws_iam_role.ecs_task_execution_role.arn
   task_role_arn      = aws_iam_role.ecs_task_role.arn
-
 
 }
 
@@ -16,7 +15,7 @@ resource "aws_ecs_service" "my_service" {
   name            = var.identifier
   cluster         = var.network.ecs_cluster.id
   task_definition = aws_ecs_task_definition.my_task_definition.arn
-  desired_count   = 0
+  desired_count   = var.desired_count
 
   network_configuration {
     security_groups = [var.network.internal_security_group.id]

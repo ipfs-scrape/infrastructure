@@ -40,3 +40,8 @@ variable "load_balancer" {
 
   default = {}
 }
+
+variable "desired_count" {
+  description = "the count of the service"
+  type        = number
+}

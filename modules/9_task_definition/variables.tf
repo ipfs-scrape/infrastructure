@@ -19,3 +19,11 @@ variable "ports" {
   type        = list(number)
   default     = []
 }
+
+variable "log_group_name" {
+  type = string
+}
+
+variable "log_group_region" {
+  type = string
+}

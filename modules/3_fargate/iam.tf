@@ -34,7 +34,8 @@ resource "aws_iam_policy" "everything_we_need" {
           "dynamodb:DeleteItem",
           "dynamodb:UpdateItem",
           "dynamodb:Query",
-          "dynamodb:Scan"
+          "dynamodb:Scan",
+          "dynamodb:DescribeTable"
         ]
         Effect   = "Allow"
         Resource = var.dynamodb.arn
@@ -77,6 +78,31 @@ resource "aws_iam_role" "ecs_task_execution_role" {
           Service = "ecs-tasks.amazonaws.com"
         }
       }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_exec" {
+  policy_arn = aws_iam_policy.exec.arn
+  role       = aws_iam_role.ecs_task_execution_role.name
+}
+
+resource "aws_iam_policy" "exec" {
+  name        = "${var.identifier}-exec"
+  description = "enables start up"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "logs:PutLogEvents",
+          "logs:DescribeLogStreams",
+          "logs:CreateLogStream",
+        ]
+        Effect   = "Allow"
+        Resource = ["*"]
+      }
+
     ]
   })
 }

@@ -1,17 +1,29 @@
+data "aws_region" "current" {}
 locals {
   identifier = "ipfs-dev"
   services = {
     worker = {
+      image         = "ghcr.io/ipfs-scrape/worker:latest"
+      desired_count = 1
       environment_vars = {
-        DYNAMODB_NAME = module.dynamodb.name
+        AWS_REGION              = data.aws_region.current.name
+        GIN_MODE                = "release"
+        IPFS_DYNAMODB_NAME      = module.dynamodb.name
+        IPFS_GATEWAY_URL        = "https://blockpartyplatform.mypinata.cloud/ipfs"
+        IPFS_SCRAPE_INTERVAL    = "1s"
+        IPFS_SCRAPE_CONCURRENCY = "2"
       }
     }
     api = {
-      port          = 7654
+      image         = "ghcr.io/ipfs-scrape/api:latest"
+      port          = 8080
       protocol      = "HTTP"
-      path_patterns = ["/api/v0/"]
+      path_patterns = ["/*"]
+      desired_count = 2
       environment_vars = {
-        DYNAMODB_NAME = module.dynamodb.name
+        GIN_MODE           = "release"
+        AWS_REGION         = data.aws_region.current.name
+        IPFS_DYNAMODB_NAME = module.dynamodb.name
       }
     }
   }
@@ -38,7 +50,8 @@ module "edge" {
   source     = "./modules/1_lb"
   identifier = local.identifier
 
-  network = module.network
+  network  = module.network
+  edge_ips = ["0.0.0.0/0"]
 }
 
 module "service_definitions" {
@@ -46,10 +59,13 @@ module "service_definitions" {
   source     = "./modules/9_task_definition"
   identifier = "${local.identifier}-${each.key}"
 
-  image = "${aws_ecr_repository.ecr_repository[each.key].repository_url}:latest"
+  image = each.value.image
 
   ports            = try([each.value.port], [])
   environment_vars = try(each.value.environment_vars, {})
+
+  log_group_name   = module.network.log_group.name
+  log_group_region = data.aws_region.current.name
 
 }
 
@@ -61,7 +77,7 @@ module "services" {
   network          = module.network
   dynamodb         = module.dynamodb
   task_definitions = jsonencode([module.service_definitions[each.key].task_definition])
-
+  desired_count    = each.value.desired_count
   load_balancer = try(
     {
       "${each.key}-${each.value.port}" = merge(each.value, {

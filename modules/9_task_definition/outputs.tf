@@ -14,5 +14,14 @@ output "task_definition" {
         protocol      = "tcp"
       }
     ]
+    logConfiguration = {
+      logDriver = "awslogs"
+      options = {
+        "awslogs-group"         = var.log_group_name
+        "awslogs-region"        = var.log_group_region
+        "awslogs-stream-prefix" = var.identifier
+      }
+    }
+
   }
 }
