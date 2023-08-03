@@ -3,7 +3,7 @@ locals {
   services = {
     worker = {
       environment_vars = {
-        DYNMANODB_NAME = module.dynamodb.name
+        DYNAMODB_NAME = module.dynamodb.name
       }
     }
     api = {
@@ -11,7 +11,7 @@ locals {
       protocol      = "HTTP"
       path_patterns = ["/api/v0/"]
       environment_vars = {
-        DYNMANODB_NAME = module.dynamodb.name
+        DYNAMODB_NAME = module.dynamodb.name
       }
     }
   }
